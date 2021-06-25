@@ -156,6 +156,7 @@ class SlackAlerter(Alerter):
                         timeout=self.slack_timeout)
                     warnings.resetwarnings()
                     response.raise_for_status()
+                    response.close()
                 except RequestException as e:
                     raise EAException("Error posting to slack: %s" % e)
         elastalert_logger.info("Alert '%s' sent to Slack" % self.rule['name'])
