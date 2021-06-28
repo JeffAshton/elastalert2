@@ -867,6 +867,11 @@ class ElastAlerter(object):
             self.es_clients[key] = es_client
         return es_client
 
+    def remove_elasticsearch_client(self, rule):
+        key = rule['name']
+        if key in self.es_clients:
+            self.es_clients.pop(key)
+
     def run_rule(self, rule, endtime, starttime=None):
         """ Run a rule for a given time period, including querying and alerting on results.
 
@@ -1098,6 +1103,7 @@ class ElastAlerter(object):
                     continue
                 self.scheduler.remove_job(job_id=rule['name'])
                 self.rules.remove(rule)
+                self.remove_elasticsearch_client(rule)
                 continue
             if hash_value != new_rule_hashes[rule_file]:
                 # Rule file was changed, reload rule
@@ -1134,6 +1140,9 @@ class ElastAlerter(object):
                     continue
                 elastalert_logger.info("Reloading configuration for rule %s" % (rule_file))
 
+                # Remove cached elasticsearch client to ensure new configuration is loaded
+                self.remove_elasticsearch_client(new_rule)
+
                 # Re-enable if rule had been disabled
                 for disabled_rule in self.disabled_rules:
                     if disabled_rule['name'] == new_rule['name']:
@@ -1162,10 +1171,12 @@ class ElastAlerter(object):
                     self.handle_error('Could not load rule %s: %s' % (rule_file, e))
                     self.send_notification_email(exception=e, rule_file=rule_file)
                     continue
+
+                # Remove cached elasticsearch client to ensure new configuration is loaded
+                self.remove_elasticsearch_client(new_rule)
+
                 if self.init_rule(new_rule):
                     elastalert_logger.info('Loaded new rule %s' % (rule_file))
-                    if new_rule['name'] in self.es_clients:
-                        self.es_clients.pop(new_rule['name'])
                     self.rules.append(new_rule)
 
         self.rule_hashes = new_rule_hashes

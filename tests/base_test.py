@@ -1443,3 +1443,19 @@ def test_get_elasticsearch_client_different_rule(ea):
     y = ea.get_elasticsearch_client(y_rule)
 
     assert x is not y, 'Should return unique client for each rule'
+
+
+def test_remove_elasticsearch_client_not_exists(ea):
+    rule = ea.rules[0]
+    key = rule['name']
+    assert key not in ea.es_clients, 'Client should not exist'
+    ea.remove_elasticsearch_client(rule)
+    assert key not in ea.es_clients, 'Client should still not exist'
+
+
+def test_remove_elasticsearch_client_exists(ea):
+    rule = ea.rules[0]
+    key = rule['name']
+    ea.es_clients[key] = 'fake'
+    ea.remove_elasticsearch_client(rule)
+    assert key not in ea.es_clients, 'Client should be removed'
