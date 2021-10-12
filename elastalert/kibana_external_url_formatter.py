@@ -59,13 +59,13 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
 
         try:
             response = requests.post(
-                url = self.shorten_url,
-                auth = self.auth,
-                headers = {
+                url=self.shorten_url,
+                auth=self.auth,
+                headers={
                     'kbn-xsrf': 'elastalert',
                     'osd-xsrf': 'elastalert'
                 },
-                json = {
+                json={
                     'url': long_url
                 }
             )
@@ -86,11 +86,11 @@ def create_kibana_auth(rule) -> Any:
     kibana_host = urlparse(kibana_url).hostname
     auth = Auth()
     http_auth = auth(
-        host = kibana_host,
-        username = rule.get('kibana_username'),
-        password = rule.get('kibana_password'),
-        aws_region = rule.get('aws_region'),
-        profile_name = rule.get('profile'),
+        host=kibana_host,
+        username=rule.get('kibana_username'),
+        password=rule.get('kibana_password'),
+        aws_region=rule.get('aws_region'),
+        profile_name=rule.get('profile'),
     )
     return http_auth
 
@@ -106,13 +106,6 @@ def create_kibana_external_url_formatter(
 
     if shorten:
         auth = create_kibana_auth(rule)
-        return ShortKibanaExternalUrlFormatter(
-            base_url = base_url,
-            auth = auth,
-            security_tenant = security_tenant
-        )
+        return ShortKibanaExternalUrlFormatter(base_url, auth, security_tenant)
 
-    return AbsoluteKibanaExternalUrlFormatter(
-        base_url=base_url,
-        security_tenant = security_tenant
-    )
+    return AbsoluteKibanaExternalUrlFormatter(base_url, security_tenant)
