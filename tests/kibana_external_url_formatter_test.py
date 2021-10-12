@@ -4,6 +4,7 @@ import requests
 
 from elastalert.kibana_external_url_formatter import AbsoluteKibanaExternalUrlFormatter, append_security_tenant, create_kibana_external_url_formatter
 from elastalert.kibana_external_url_formatter import ShortKibanaExternalUrlFormatter
+from elastalert.util import EAException
 
 from unittest import mock
 
@@ -159,6 +160,18 @@ def test_short_kinbana_external_url_formatter(
     assert actualUrl == test_case.expected_url
 
     mock_post.assert_called_once_with(**test_case.expected_api_request)
+
+
+@mock.patch('requests.post', side_effect=mock_kibana_shorten_url_api)
+def test_short_kinbana_external_url_formatter_request_exception(mock_post: mock.MagicMock):
+    formatter = ShortKibanaExternalUrlFormatter(
+        base_url = 'http://kibana.test.org',
+        auth = None,
+        security_tenant = None,
+    )
+    with pytest.raises(EAException, match="Failed to invoke Kibana Shorten URL API"):
+        formatter.format('http://wacky.org')
+    mock_post.assert_called_once()
 
 
 def test_create_kibana_external_url_formatter_without_shortening():
