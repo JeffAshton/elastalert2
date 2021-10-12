@@ -19,15 +19,6 @@ kibana7_versions = frozenset(['7.0', '7.1', '7.2', '7.3', '7.4', '7.5', '7.6', '
 def generate_kibana_discover_url(rule, match):
     ''' Creates a link for a kibana discover app. '''
 
-    kibana_base_url = rule.get('kibana_url')
-    relative_discover_app_url = generate_relative_kibana_discover_url(rule, match)
-    discover_app_url = urllib.parse.urljoin(kibana_base_url, relative_discover_app_url)
-    return discover_app_url
-
-
-def generate_relative_kibana_discover_url(rule, match):
-    ''' Creates a relative link for a kibana discover app. '''
-
     discover_app_url = rule.get('kibana_discover_app_url')
     if not discover_app_url:
         elastalert_logger.warning(

@@ -39,7 +39,7 @@ def test_absolute_kinbana_external_url_formatter(
     test_case: FormatTestCase
 ):
     formatter = AbsoluteKibanaExternalUrlFormatter(
-        base_url=test_case.base_url
+        base_url = test_case.base_url
     )
     actualUrl = formatter.format(test_case.relative_url)
     assert actualUrl == test_case.expected_url
@@ -69,11 +69,13 @@ class ShortenUrlTestCase:
     def __init__(
          self,
          base_url: str,
+         auth: Any,
          relative_url: str,
-         expected_api_request,
+         expected_api_request: Any,
          expected_url: str
     ) -> None:
         self.base_url = base_url
+        self.authorization = auth
         self.relative_url = relative_url
         self.expected_api_request = expected_api_request
         self.expected_url = expected_url
@@ -82,9 +84,11 @@ class ShortenUrlTestCase:
 @pytest.mark.parametrize("test_case", [
     ShortenUrlTestCase(
         base_url = 'http://elasticsearch.test.org/_plugin/kibana/',
+        auth = None,
         relative_url = 'app/dev_tools#/console',
         expected_api_request = {
             'url': 'http://elasticsearch.test.org/_plugin/kibana/api/shorten_url',
+            'auth': None,
             'headers': {
                 'kbn-xsrf': 'elastalert',
                 'osd-xsrf': 'elastalert'
@@ -97,9 +101,11 @@ class ShortenUrlTestCase:
     ),
     ShortenUrlTestCase(
         base_url = 'http://kibana.test.org/',
+        auth = 'username:password',
         relative_url = '/app/dev_tools#/console',
         expected_api_request = {
             'url': 'http://kibana.test.org/api/shorten_url',
+            'auth': 'username:password',
             'headers': {
                 'kbn-xsrf': 'elastalert',
                 'osd-xsrf': 'elastalert'
@@ -116,7 +122,8 @@ def test_short_kinbana_external_url_formatter(
     test_case: ShortenUrlTestCase
 ):
     formatter = ShortKibanaExternalUrlFormatter(
-        base_url=test_case.base_url
+        base_url = test_case.base_url,
+        auth = test_case.authorization
     )
 
     actualUrl = formatter.format(test_case.relative_url)
