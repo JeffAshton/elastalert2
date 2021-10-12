@@ -1465,3 +1465,19 @@ def test_time_enhancement(ea):
     te.process(match)
     excepted = '2021-01-01 00:00 UTC'
     assert match['@timestamp'] == excepted
+
+
+def test_get_kibana_discover_external_url_formatter_same_rule(ea):
+    rule = ea.rules[0]
+    x = ea.get_kibana_discover_external_url_formatter(rule)
+    y = ea.get_kibana_discover_external_url_formatter(rule)
+    assert x is y, "Should return same external url formatter for the same rule"
+
+
+def test_get_kibana_discover_external_url_formatter_different_rule(ea):
+    x_rule = ea.rules[0]
+    y_rule = copy.copy(x_rule)
+    y_rule['name'] = 'different_rule'
+    x = ea.get_kibana_discover_external_url_formatter(x_rule)
+    y = ea.get_kibana_discover_external_url_formatter(y_rule)
+    assert x is not y, 'Should return unique external url formatter for each rule'

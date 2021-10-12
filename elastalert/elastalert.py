@@ -1684,7 +1684,8 @@ class ElastAlerter(object):
         formatter = rule.get(key)
         if formatter is None:
             shorten = rule.get('shorten_kibana_discover_url')
-            formatter = create_kibana_external_url_formatter(rule, shorten)
+            security_tenant = rule.get('kibana_discover_security_tenant')
+            formatter = create_kibana_external_url_formatter(rule, shorten, security_tenant)
             rule[key] = formatter
         return formatter
 
