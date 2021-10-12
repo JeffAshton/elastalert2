@@ -21,13 +21,13 @@ def append_security_tenant(url, security_tenant):
     return urlunsplit(new_args)
 
 class KibanaExternalUrlFormatter:
-    '''Formats an external Kibana url'''
+    '''Interface for formatting external Kibana urls'''
 
     def format(self, relative_url: str) -> str:
         pass
 
 class AbsoluteKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
-    '''Formats an external absolute Kibana url'''
+    '''Formats absolute external Kibana urls'''
 
     def __init__(self, base_url: str, security_tenant: str) -> None:
         super().__init__()
@@ -41,7 +41,7 @@ class AbsoluteKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
         return url
 
 class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
-    '''Formats an external url using the Kibana Shorten URL API'''
+    '''Formats external urls using the Kibana Shorten URL API'''
 
     def __init__(self, base_url: str, auth: Any, security_tenant: str) -> None:
         super().__init__()
@@ -83,7 +83,7 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
 
 
 def create_kibana_auth(rule) -> Any:
-    '''Creates a kibana http authentication for use by requests'''
+    '''Creates a Kibana http authentication for use by requests'''
     kibana_url = rule.get('kibana_url')
     kibana_host = urlparse(kibana_url).hostname
     auth = Auth()
@@ -102,7 +102,7 @@ def create_kibana_external_url_formatter(
     shorten: bool,
     security_tenant: str
 ) -> KibanaExternalUrlFormatter:
-    '''Creates a kibana external url formatter'''
+    '''Creates a Kibana external url formatter'''
 
     base_url = rule.get('kibana_url')
 
