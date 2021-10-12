@@ -7,6 +7,7 @@ from requests import RequestException
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlsplit, urlunsplit
 
 def append_security_tenant(url, security_tenant):
+    '''Appends the security_tenant query string parameter to the url'''
     parsed = urlsplit(url)
 
     if parsed.query:
@@ -82,6 +83,7 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
 
 
 def create_kibana_auth(rule) -> Any:
+    '''Creates a kibana http authentication for use by requests'''
     kibana_url = rule.get('kibana_url')
     kibana_host = urlparse(kibana_url).hostname
     auth = Auth()
