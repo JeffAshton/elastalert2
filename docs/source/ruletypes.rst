@@ -662,6 +662,8 @@ This value should be relative to the base kibana url defined by ``kibana_url`` a
 
 ``kibana_discover_app_url: app/discover#/``
 
+(Optional, string, no default)
+
 kibana_discover_security_tenant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
