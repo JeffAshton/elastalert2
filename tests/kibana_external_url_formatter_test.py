@@ -280,12 +280,13 @@ def test_append_security_tenant(test_case):
 
 
 def test_create_kibana_auth_basic():
-    kibana_url = 'http://kibana.test.org'
-    rule = {
-        'kibana_username': 'john',
-        'kibana_password': 'doe',
-    }
-    auth = create_kibana_auth(kibana_url, rule)
+    auth = create_kibana_auth(
+        kibana_url='http://kibana.test.org',
+        rule={
+            'kibana_username': 'john',
+            'kibana_password': 'doe',
+        }
+    )
     assert auth == HTTPBasicAuth('john', 'doe')
 
 
@@ -299,11 +300,12 @@ def test_create_kibana_auth_basic():
     clear=True
 )
 def test_create_kibana_auth_aws_explicit_region():
-    kibana_url = 'http://kibana.test.org'
-    rule = {
-        'aws_region': 'us-east-1',
-    }
-    auth = create_kibana_auth(kibana_url, rule)
+    auth = create_kibana_auth(
+        kibana_url='http://kibana.test.org',
+        rule={
+            'aws_region': 'us-east-1'
+        }
+    )
     assert type(auth) is RefeshableAWSRequestsAuth
     assert auth.aws_host == 'kibana.test.org'
     assert auth.aws_region == 'us-east-1'
@@ -323,9 +325,10 @@ def test_create_kibana_auth_aws_explicit_region():
     clear=True
 )
 def test_create_kibana_auth_aws_implicit_region():
-    kibana_url = 'http://kibana.test.org'
-    rule = {}
-    auth = create_kibana_auth(kibana_url, rule)
+    auth = create_kibana_auth(
+        kibana_url='http://kibana.test.org',
+        rule={}
+    )
     assert type(auth) is RefeshableAWSRequestsAuth
     assert auth.aws_host == 'kibana.test.org'
     assert auth.aws_region == 'us-east-2'
@@ -341,9 +344,10 @@ def test_create_kibana_auth_aws_implicit_region():
     clear=True
 )
 def test_create_kibana_auth_unauthenticated():
-    kibana_url = 'http://kibana.test.org'
-    rule = {}
-    auth = create_kibana_auth(kibana_url, rule)
+    auth = create_kibana_auth(
+        kibana_url='http://kibana.test.org',
+        rule={}
+    )
     assert auth is None
 
 
