@@ -14,7 +14,8 @@ from elastalert.enhancements import BaseEnhancement
 from elastalert.enhancements import DropMatchException
 from elastalert.enhancements import TimeEnhancement
 from elastalert.kibana import dashboard_temp
-from elastalert.kibana_external_url_formatter import AbsoluteKibanaExternalUrlFormatter, ShortKibanaExternalUrlFormatter
+from elastalert.kibana_external_url_formatter import AbsoluteKibanaExternalUrlFormatter
+from elastalert.kibana_external_url_formatter import ShortKibanaExternalUrlFormatter
 from elastalert.util import dt_to_ts
 from elastalert.util import dt_to_unix
 from elastalert.util import dt_to_unixms
