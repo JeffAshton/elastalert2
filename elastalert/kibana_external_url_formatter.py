@@ -118,6 +118,7 @@ def create_kibana_auth(rule):
             aws_service='es'
         )
 
+    # Unauthenticated
     return None
 
 
