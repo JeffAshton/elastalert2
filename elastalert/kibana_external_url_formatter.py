@@ -21,7 +21,8 @@ def append_security_tenant(url, security_tenant):
 
     new_query = urlencode(qs)
     new_args = parsed._replace(query=new_query)
-    return urlunsplit(new_args)
+    new_url = urlunsplit(new_args)
+    return new_url
 
 class KibanaExternalUrlFormatter:
     '''Interface for formatting external Kibana urls'''
