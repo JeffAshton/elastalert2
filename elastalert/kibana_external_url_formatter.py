@@ -1,10 +1,13 @@
-from typing import Any
-import requests
-from elastalert.auth import Auth
-
-from elastalert.util import EAException
-from requests import RequestException
+import boto3
+from os import environ
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlsplit, urlunsplit
+
+import requests
+from requests import RequestException
+from requests.auth import HTTPBasicAuth
+
+from elastalert.auth import RefeshableAWSRequestsAuth
+from elastalert.util import EAException
 
 def append_security_tenant(url, security_tenant):
     '''Appends the security_tenant query string parameter to the url'''
@@ -43,7 +46,7 @@ class AbsoluteKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
 class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
     '''Formats external urls using the Kibana Shorten URL API'''
 
-    def __init__(self, base_url: str, auth: Any, security_tenant: str) -> None:
+    def __init__(self, base_url: str, auth, security_tenant: str) -> None:
         super().__init__()
         self.auth = auth
         self.security_tenant = security_tenant
@@ -74,7 +77,8 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
         except RequestException as e:
             raise EAException("Failed to invoke Kibana Shorten URL API: %s" % e)
 
-        url_id = response.json().get('urlId')
+        response_body = response.json()
+        url_id = response_body.get('urlId')
 
         goto_url = urljoin(self.goto_url, url_id)
         if self.security_tenant:
@@ -82,19 +86,39 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
         return goto_url
 
 
-def create_kibana_auth(rule) -> Any:
+def create_kibana_auth(rule):
     '''Creates a Kibana http authentication for use by requests'''
-    kibana_url = rule.get('kibana_url')
-    kibana_host = urlparse(kibana_url).hostname
-    auth = Auth()
-    http_auth = auth(
-        host=kibana_host,
-        username=rule.get('kibana_username'),
-        password=rule.get('kibana_password'),
-        aws_region=rule.get('aws_region'),
-        profile_name=rule.get('profile'),
-    )
-    return http_auth
+
+    # Basic
+    username = rule.get('kibana_username')
+    password = rule.get('kibana_password')
+    if username and password:
+        return HTTPBasicAuth(username, password)
+
+    # AWS SigV4
+    aws_region = rule.get('aws_region')
+    if not aws_region:
+        aws_region = environ.get('AWS_DEFAULT_REGION')
+    if aws_region:
+
+        aws_profile = rule.get('profile')
+        session = boto3.session.Session(
+            profile_name=aws_profile,
+            region_name=aws_region
+        )
+        credentials = session.get_credentials()
+
+        kibana_url = rule.get('kibana_url')
+        kibana_host = urlparse(kibana_url).hostname
+
+        return RefeshableAWSRequestsAuth(
+            refreshable_credential=credentials,
+            aws_host=kibana_host,
+            aws_region=aws_region,
+            aws_service='es'
+        )
+
+    return None
 
 
 def create_kibana_external_url_formatter(

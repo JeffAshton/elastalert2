@@ -64,6 +64,10 @@ Rule Configuration Cheat Sheet
 +--------------------------------------------------------------+           |
 | ``kibana_url`` (string, default from es_host)                |           |
 +--------------------------------------------------------------+           |
+| ``kibana_username`` (string, no default)                     |           |
++--------------------------------------------------------------+           |
+| ``kibana_password`` (string, no default)                     |           |
++--------------------------------------------------------------+           |
 | ``use_kibana4_dashboard`` (string, no default)               |           |
 +--------------------------------------------------------------+           |
 | ``kibana4_start_timedelta`` (time, default: 10 min)          |           |
@@ -71,6 +75,8 @@ Rule Configuration Cheat Sheet
 | ``kibana4_end_timedelta`` (time, default: 10 min)            |           |
 +--------------------------------------------------------------+           |
 | ``generate_kibana_discover_url`` (boolean, default False)    |           |
++--------------------------------------------------------------+           |
+| ``shorten_kibana_discover_url`` (boolean, default False)     |           |
 +--------------------------------------------------------------+           |
 | ``kibana_discover_app_url`` (string, no default)             |           |
 +--------------------------------------------------------------+           |
