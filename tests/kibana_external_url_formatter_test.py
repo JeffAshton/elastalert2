@@ -1,6 +1,8 @@
 from typing import Any
 import pytest
+
 import requests
+from requests.auth import AuthBase, HTTPBasicAuth
 
 from elastalert.kibana_external_url_formatter import AbsoluteKibanaExternalUrlFormatter
 from elastalert.kibana_external_url_formatter import ShortKibanaExternalUrlFormatter
@@ -12,42 +14,53 @@ from elastalert.util import EAException
 from unittest import mock
 
 
-class FormatTestCase:
+class AbsoluteFormatTestCase:
     def __init__(
          self,
          base_url: str,
-         security_tenant: str,
          relative_url: str,
-         expected_url: str
+         expected_url: str,
+         security_tenant: str = None,
     ) -> None:
         self.base_url = base_url
-        self.security_tenant = security_tenant
         self.relative_url = relative_url
         self.expected_url = expected_url
+        self.security_tenant = security_tenant
 
 
 @pytest.mark.parametrize("test_case", [
-    FormatTestCase(
+
+    # Relative to Kibana plugin
+    AbsoluteFormatTestCase(
         base_url='http://elasticsearch.test.org:9200/_plugin/kibana/',
-        security_tenant=None,
         relative_url='app/dev_tools#/console',
         expected_url='http://elasticsearch.test.org:9200/_plugin/kibana/app/dev_tools#/console'
     ),
-    FormatTestCase(
+
+    # Relative to OpenSearch Dashboards
+    AbsoluteFormatTestCase(
         base_url='http://opensearch.test.org/_dashboards/',
-        security_tenant=None,
         relative_url='app/dev_tools#/console',
         expected_url='http://opensearch.test.org/_dashboards/app/dev_tools#/console'
     ),
-    FormatTestCase(
+
+    # Relative to root of dedicated Kibana domain
+    AbsoluteFormatTestCase(
         base_url='http://kibana.test.org/',
-        security_tenant=None,
         relative_url='/app/dev_tools#/console',
         expected_url='http://kibana.test.org/app/dev_tools#/console'
-    )
+    ),
+
+    # With security tenant
+    AbsoluteFormatTestCase(
+        base_url='http://kibana.test.org/',
+        security_tenant='global',
+        relative_url='/app/dev_tools#/console',
+        expected_url='http://kibana.test.org/app/dev_tools?security_tenant=global#/console'
+    ),
 ])
 def test_absolute_kinbana_external_url_formatter(
-    test_case: FormatTestCase
+    test_case: AbsoluteFormatTestCase
 ):
     formatter = AbsoluteKibanaExternalUrlFormatter(
         base_url=test_case.base_url,
@@ -84,26 +97,26 @@ class ShortenUrlTestCase:
     def __init__(
          self,
          base_url: str,
-         auth: Any,
          relative_url: str,
-         security_tenant: str,
          expected_api_request: Any,
-         expected_url: str
+         expected_url: str,
+         auth: AuthBase = None,
+         security_tenant: str = None
     ) -> None:
         self.base_url = base_url
-        self.authorization = auth
         self.relative_url = relative_url
-        self.security_tenant = security_tenant
         self.expected_api_request = expected_api_request
         self.expected_url = expected_url
+        self.authorization = auth
+        self.security_tenant = security_tenant
 
 
 @mock.patch('requests.post', side_effect=mock_kibana_shorten_url_api)
 @pytest.mark.parametrize("test_case", [
+
+    # Relative to kibana plugin
     ShortenUrlTestCase(
         base_url='http://elasticsearch.test.org/_plugin/kibana/',
-        auth=None,
-        security_tenant=None,
         relative_url='app/dev_tools#/console',
         expected_api_request={
             'url': 'http://elasticsearch.test.org/_plugin/kibana/api/shorten_url',
@@ -118,14 +131,14 @@ class ShortenUrlTestCase:
         },
         expected_url='http://elasticsearch.test.org/_plugin/kibana/goto/62af3ebe6652370f85de91ccb3a3825f'
     ),
+
+    # Relative to root of dedicated Kibana domain
     ShortenUrlTestCase(
         base_url='http://kibana.test.org/',
-        auth='username:password',
-        security_tenant=None,
         relative_url='/app/dev_tools#/console',
         expected_api_request={
             'url': 'http://kibana.test.org/api/shorten_url',
-            'auth': 'username:password',
+            'auth': None,
             'headers': {
                 'kbn-xsrf': 'elastalert',
                 'osd-xsrf': 'elastalert'
@@ -136,9 +149,29 @@ class ShortenUrlTestCase:
         },
         expected_url='http://kibana.test.org/goto/62af3ebe6652370f85de91ccb3a3825f'
     ),
+
+    # With authentication
     ShortenUrlTestCase(
         base_url='http://kibana.test.org/',
-        auth=None,
+        auth=HTTPBasicAuth('john', 'doe'),
+        relative_url='/app/dev_tools#/console',
+        expected_api_request={
+            'url': 'http://kibana.test.org/api/shorten_url',
+            'auth': HTTPBasicAuth('john', 'doe'),
+            'headers': {
+                'kbn-xsrf': 'elastalert',
+                'osd-xsrf': 'elastalert'
+            },
+            'json': {
+                'url': '/app/dev_tools#/console'
+            }
+        },
+        expected_url='http://kibana.test.org/goto/62af3ebe6652370f85de91ccb3a3825f'
+    ),
+
+    # With security tenant
+    ShortenUrlTestCase(
+        base_url='http://kibana.test.org/',
         security_tenant='global',
         relative_url='/app/dev_tools#/console',
         expected_api_request={
@@ -189,19 +222,6 @@ def test_create_kibana_external_url_formatter_without_shortening():
             'kibana_url': 'http://kibana.test.org/'
         },
         shorten=False,
-        security_tenant=None
-    )
-    assert type(formatter) is AbsoluteKibanaExternalUrlFormatter
-    assert formatter.base_url == 'http://kibana.test.org/'
-    assert formatter.security_tenant is None
-
-
-def test_create_kibana_external_url_formatter_without_shortening_and_security_tenant():
-    formatter = create_kibana_external_url_formatter(
-        rule={
-            'kibana_url': 'http://kibana.test.org/'
-        },
-        shorten=False,
         security_tenant='foo'
     )
     assert type(formatter) is AbsoluteKibanaExternalUrlFormatter
@@ -213,32 +233,36 @@ def test_create_kibana_external_url_formatter_with_shortening():
     formatter = create_kibana_external_url_formatter(
         rule={
             'kibana_url': 'http://kibana.test.org/',
-            'kibana_username': 'username',
-            'kibana_password': 'password'
+            'kibana_username': 'john',
+            'kibana_password': 'doe'
         },
         shorten=True,
         security_tenant='foo'
     )
     assert type(formatter) is ShortKibanaExternalUrlFormatter
-    assert formatter.auth == 'username:password'
+    assert formatter.auth == HTTPBasicAuth('john', 'doe')
     assert formatter.security_tenant == 'foo'
     assert formatter.goto_url == 'http://kibana.test.org/goto/'
     assert formatter.shorten_url == 'http://kibana.test.org/api/shorten_url?security_tenant=foo'
 
 
 @pytest.mark.parametrize("test_case", [
+    # Trivial
     {
         'url': 'http://test.org',
         'expected':  'http://test.org?security_tenant=foo'
     },
+    # With query
     {
         'url': 'http://test.org?year=2021',
         'expected':  'http://test.org?year=2021&security_tenant=foo'
     },
+    # With fragment
     {
         'url': 'http://test.org#fragement',
         'expected':  'http://test.org?security_tenant=foo#fragement'
     },
+    # With query & fragment
     {
         'url': 'http://test.org?year=2021#fragement',
         'expected':  'http://test.org?year=2021&security_tenant=foo#fragement'
