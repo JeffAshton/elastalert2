@@ -6,6 +6,7 @@ import requests
 from requests.auth import AuthBase, HTTPBasicAuth
 
 from elastalert.kibana_external_url_formatter import AbsoluteKibanaExternalUrlFormatter
+from elastalert.kibana_external_url_formatter import KibanaExternalUrlFormatter
 from elastalert.kibana_external_url_formatter import ShortKibanaExternalUrlFormatter
 from elastalert.kibana_external_url_formatter import append_security_tenant
 from elastalert.kibana_external_url_formatter import create_kibana_auth
@@ -346,3 +347,8 @@ def test_create_kibana_auth_unauthenticated():
     auth = create_kibana_auth(rule)
     assert auth is None
 
+
+def test_kibana_external_url_formatter_not_implemented():
+    formatter = KibanaExternalUrlFormatter()
+    with pytest.raises(NotImplementedError):
+        formatter.format('test')

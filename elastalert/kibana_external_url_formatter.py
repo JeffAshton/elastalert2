@@ -27,7 +27,7 @@ class KibanaExternalUrlFormatter:
     '''Interface for formatting external Kibana urls'''
 
     def format(self, relative_url: str) -> str:
-        pass
+        raise NotImplementedError()
 
 class AbsoluteKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
     '''Formats absolute external Kibana urls'''
