@@ -33,7 +33,6 @@ class AbsoluteKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
     '''Formats absolute external Kibana urls'''
 
     def __init__(self, base_url: str, security_tenant: str) -> None:
-        super().__init__()
         self.base_url = base_url
         self.security_tenant = security_tenant
 
@@ -47,7 +46,6 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
     '''Formats external urls using the Kibana Shorten URL API'''
 
     def __init__(self, base_url: str, auth: AuthBase, security_tenant: str) -> None:
-        super().__init__()
         self.auth = auth
         self.security_tenant = security_tenant
         self.goto_url = urljoin(base_url, 'goto/')
