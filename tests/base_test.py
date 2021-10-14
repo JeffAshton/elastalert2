@@ -14,6 +14,7 @@ from elastalert.enhancements import BaseEnhancement
 from elastalert.enhancements import DropMatchException
 from elastalert.enhancements import TimeEnhancement
 from elastalert.kibana import dashboard_temp
+from elastalert.kibana_external_url_formatter import AbsoluteKibanaExternalUrlFormatter, ShortKibanaExternalUrlFormatter
 from elastalert.util import dt_to_ts
 from elastalert.util import dt_to_unix
 from elastalert.util import dt_to_unixms
@@ -1471,6 +1472,7 @@ def test_get_kibana_discover_external_url_formatter_same_rule(ea):
     rule = ea.rules[0]
     x = ea.get_kibana_discover_external_url_formatter(rule)
     y = ea.get_kibana_discover_external_url_formatter(rule)
+    assert type(x) is AbsoluteKibanaExternalUrlFormatter
     assert x is y, "Should return same external url formatter for the same rule"
 
 
@@ -1480,4 +1482,14 @@ def test_get_kibana_discover_external_url_formatter_different_rule(ea):
     y_rule['name'] = 'different_rule'
     x = ea.get_kibana_discover_external_url_formatter(x_rule)
     y = ea.get_kibana_discover_external_url_formatter(y_rule)
+    assert type(x) is AbsoluteKibanaExternalUrlFormatter
     assert x is not y, 'Should return unique external url formatter for each rule'
+
+
+def test_get_kibana_discover_external_url_formatter_smoke(ea):
+    rule = copy.copy(ea.rules[0])
+    rule['kibana_discover_security_tenant'] = 'global'
+    rule['shorten_kibana_discover_url'] = True
+    formatter = ea.get_kibana_discover_external_url_formatter(rule)
+    assert type(formatter) is ShortKibanaExternalUrlFormatter
+    assert formatter.security_tenant == 'global'
