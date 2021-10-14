@@ -658,7 +658,7 @@ kibana_discover_app_url
 
 ``kibana_discover_app_url``: The url of the Kibana Discover application used to generate the ``kibana_discover_url`` variable.
 This value can use `$VAR` and `${VAR}` references to expand environment variables.
-This value should be relative to the base kibana url defined by ``kibana_url``, and will vary depending on your installation.
+This value should be relative to the base kibana url defined by ``kibana_url`` and will vary depending on your installation.
 
 ``kibana_discover_app_url: app/discover#/
 
