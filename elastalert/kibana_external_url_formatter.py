@@ -4,7 +4,7 @@ from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlsplit, urlu
 
 import requests
 from requests import RequestException
-from requests.auth import HTTPBasicAuth
+from requests.auth import AuthBase, HTTPBasicAuth
 
 from elastalert.auth import RefeshableAWSRequestsAuth
 from elastalert.util import EAException
@@ -46,7 +46,7 @@ class AbsoluteKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
 class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
     '''Formats external urls using the Kibana Shorten URL API'''
 
-    def __init__(self, base_url: str, auth, security_tenant: str) -> None:
+    def __init__(self, base_url: str, auth: AuthBase, security_tenant: str) -> None:
         super().__init__()
         self.auth = auth
         self.security_tenant = security_tenant
@@ -86,7 +86,7 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
         return goto_url
 
 
-def create_kibana_auth(rule):
+def create_kibana_auth(rule) -> AuthBase:
     '''Creates a Kibana http authentication for use by requests'''
 
     # Basic
