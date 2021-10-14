@@ -660,7 +660,7 @@ kibana_discover_app_url
 This value can use `$VAR` and `${VAR}` references to expand environment variables.
 This value should be relative to the base kibana url defined by ``kibana_url`` and will vary depending on your installation.
 
-``kibana_discover_app_url: app/discover#/
+``kibana_discover_app_url: app/discover#/``
 
 kibana_discover_security_tenant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
