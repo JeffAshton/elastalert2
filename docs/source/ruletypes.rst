@@ -84,6 +84,8 @@ Rule Configuration Cheat Sheet
 +--------------------------------------------------------------+           |
 | ``kibana_discover_index_pattern_id`` (string, no default)    |           |
 +--------------------------------------------------------------+           |
+| ``kibana_discover_security_tenant``  (string, no default)    |           |
++--------------------------------------------------------------+           |
 | ``kibana_discover_columns`` (list of strs, default _source)  |           |
 +--------------------------------------------------------------+           |
 | ``kibana_discover_from_timedelta`` (time, default: 10 min)   |           |
