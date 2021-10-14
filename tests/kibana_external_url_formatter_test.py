@@ -186,7 +186,7 @@ class ShortenUrlTestCase:
                 'osd-xsrf': 'elastalert'
             },
             'json': {
-                'url': '/app/dev_tools#/console'
+                'url': '/app/dev_tools?security_tenant=global#/console'
             }
         },
         expected_url='http://kibana.test.org/goto/62af3ebe6652370f85de91ccb3a3825f?security_tenant=global'

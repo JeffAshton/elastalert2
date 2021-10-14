@@ -59,6 +59,8 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
     def format(self, relative_url: str) -> str:
         # join with '/' to ensure relative to root of app
         long_url = urljoin('/', relative_url)
+        if self.security_tenant:
+            long_url = append_security_tenant(long_url, self.security_tenant)
 
         try:
             response = requests.post(
