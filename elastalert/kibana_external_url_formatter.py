@@ -1,5 +1,5 @@
 import boto3
-from os import environ
+import os
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlsplit, urlunsplit
 
 import requests
@@ -98,7 +98,7 @@ def create_kibana_auth(rule) -> AuthBase:
     # AWS SigV4
     aws_region = rule.get('aws_region')
     if not aws_region:
-        aws_region = environ.get('AWS_DEFAULT_REGION')
+        aws_region = os.environ.get('AWS_DEFAULT_REGION')
     if aws_region:
 
         aws_profile = rule.get('profile')

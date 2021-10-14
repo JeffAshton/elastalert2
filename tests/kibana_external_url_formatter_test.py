@@ -1,4 +1,5 @@
 from typing import Any
+import os
 import pytest
 
 import requests
@@ -7,8 +8,10 @@ from requests.auth import AuthBase, HTTPBasicAuth
 from elastalert.kibana_external_url_formatter import AbsoluteKibanaExternalUrlFormatter
 from elastalert.kibana_external_url_formatter import ShortKibanaExternalUrlFormatter
 from elastalert.kibana_external_url_formatter import append_security_tenant
+from elastalert.kibana_external_url_formatter import create_kibana_auth
 from elastalert.kibana_external_url_formatter import create_kibana_external_url_formatter
 
+from elastalert.auth import RefeshableAWSRequestsAuth
 from elastalert.util import EAException
 
 from unittest import mock
@@ -273,3 +276,73 @@ def test_append_security_tenant(test_case):
     expected = test_case.get('expected')
     result = append_security_tenant(url=url, security_tenant='foo')
     assert result == expected
+
+
+def test_create_kibana_auth_basic():
+    rule = {
+        'kibana_username': 'john',
+        'kibana_password': 'doe',
+    }
+    auth = create_kibana_auth(rule)
+    assert auth == HTTPBasicAuth('john', 'doe')
+
+
+@mock.patch.dict(
+    os.environ,
+    {
+        'AWS_DEFAULT_REGION': '',
+        'AWS_ACCESS_KEY_ID': 'access',
+        'AWS_SECRET_ACCESS_KEY': 'secret',
+    },
+    clear=True
+)
+def test_create_kibana_auth_aws_explicit_region():
+    rule = {
+        'aws_region': 'us-east-1',
+        'kibana_url': 'http://kibana.test.org',
+    }
+    auth = create_kibana_auth(rule)
+    assert type(auth) is RefeshableAWSRequestsAuth
+    assert auth.aws_host == 'kibana.test.org'
+    assert auth.aws_region == 'us-east-1'
+    assert auth.service == 'es'
+    assert auth.aws_access_key == 'access'
+    assert auth.aws_secret_access_key == 'secret'
+    assert auth.aws_token is None
+
+
+@mock.patch.dict(
+    os.environ,
+    {
+        'AWS_DEFAULT_REGION': 'us-east-2',
+        'AWS_ACCESS_KEY_ID': 'access',
+        'AWS_SECRET_ACCESS_KEY': 'secret',
+    },
+    clear=True
+)
+def test_create_kibana_auth_aws_implicit_region():
+    rule = {
+        'kibana_url': 'http://kibana.test.org',
+    }
+    auth = create_kibana_auth(rule)
+    assert type(auth) is RefeshableAWSRequestsAuth
+    assert auth.aws_host == 'kibana.test.org'
+    assert auth.aws_region == 'us-east-2'
+    assert auth.service == 'es'
+    assert auth.aws_access_key == 'access'
+    assert auth.aws_secret_access_key == 'secret'
+    assert auth.aws_token is None
+
+
+@mock.patch.dict(
+    os.environ,
+    {},
+    clear=True
+)
+def test_create_kibana_auth_unauthenticated():
+    rule = {
+        'kibana_url': 'http://kibana.test.org',
+    }
+    auth = create_kibana_auth(rule)
+    assert auth is None
+
