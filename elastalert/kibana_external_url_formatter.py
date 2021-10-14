@@ -85,7 +85,7 @@ class ShortKibanaExternalUrlFormatter(KibanaExternalUrlFormatter):
         return goto_url
 
 
-def create_kibana_auth(rule) -> AuthBase:
+def create_kibana_auth(kibana_url, rule) -> AuthBase:
     '''Creates a Kibana http authentication for use by requests'''
 
     # Basic
@@ -107,7 +107,6 @@ def create_kibana_auth(rule) -> AuthBase:
         )
         credentials = session.get_credentials()
 
-        kibana_url = rule.get('kibana_url')
         kibana_host = urlparse(kibana_url).hostname
 
         return RefeshableAWSRequestsAuth(
@@ -131,7 +130,7 @@ def create_kibana_external_url_formatter(
     base_url = rule.get('kibana_url')
 
     if shorten:
-        auth = create_kibana_auth(rule)
+        auth = create_kibana_auth(base_url, rule)
         return ShortKibanaExternalUrlFormatter(base_url, auth, security_tenant)
 
     return AbsoluteKibanaExternalUrlFormatter(base_url, security_tenant)
